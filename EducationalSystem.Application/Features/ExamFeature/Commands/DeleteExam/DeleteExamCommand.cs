@@ -1,0 +1,9 @@
+﻿// DeleteExamCommand.cs
+using EducationalSystem.Domain.Entities;
+using EducationalSystem.Domain.Entities.DTOs;
+using MediatR;
+
+namespace EducationalSystem.Application.Features.ExamFeature.Commands.DeleteExam
+{
+    public record DeleteExamCommand(Exam Exam) : IRequest<ResponseMessage>;
+}

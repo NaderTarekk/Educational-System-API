@@ -4,5 +4,5 @@ using MediatR;
 
 namespace EducationalSystem.Application.Features.ExamFeature.Queries.GetExamById
 {
-    public record GetExamByIdQuery(Guid Id) : IRequest<GetByIdResponseDto<Exam>>;
+    public record GetExamByIdQuery(Guid Id) : IRequest<GetByIdResponseDto<ExamDto>>;
 }

@@ -19,35 +19,63 @@ namespace EducationalSystem.Infrastructure.Repositories
         }
 
         // ===== READ OPERATIONS =====
-
-        public async Task<GetByIdResponseDto<Exam>> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<GetByIdResponseDto<ExamDto>> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
             try
             {
                 var exam = await _context.TbExams
-                    .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
+          .Include(e => e.Questions)
+              .ThenInclude(q => q.Options)
+          .Include(e => e.Group)
+          .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
 
-                if (exam == null)
+                var examDto = new ExamDto
                 {
-                    return new GetByIdResponseDto<Exam>
+                    Id = exam.Id,
+                    Title = exam.Title,
+                    Description = exam.Description,
+                    GroupId = exam.GroupId,
+                    Duration = exam.Duration,
+                    TotalMarks = exam.TotalMarks,
+                    PassingMarks = exam.PassingMarks,
+                    StartDate = exam.StartDate,
+                    EndDate = exam.EndDate,
+                    IsActive = exam.IsActive,
+                    CreatedAt = exam.CreatedAt,
+                    QuestionsCount = exam.Questions?.Count ?? 0,
+                    Group = exam.Group != null ? new GroupDto
                     {
-                        Success = false,
-                        Message = "الامتحان غير موجود",
-                        Data = null
-                    };
-                }
+                        Id = exam.Group.Id,
+                        Name = exam.Group.Name
+                    } : null,
+                    Questions = exam.Questions?.Select(q => new QuestionDto
+                    {
+                        Id = q.Id,
+                        QuestionText = q.QuestionText,
+                        Type = q.Type,
+                        Marks = q.Marks,
+                        Order = q.Order,
+                        Options = q.Options?.Select(o => new QuestionOptionDto
+                        {
+                            Id = o.Id,
+                            OptionText = o.OptionText,
+                            IsCorrect = o.IsCorrect,
+                            Order = o.Order
+                        }).OrderBy(o => o.Order).ToList()
+                    }).OrderBy(q => q.Order).ToList()
+                };
 
-                return new GetByIdResponseDto<Exam>
+                return new GetByIdResponseDto<ExamDto>
                 {
                     Success = true,
                     Message = "تم جلب الامتحان بنجاح",
-                    Data = exam
+                    Data = examDto
                 };
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting exam by id: {ExamId}", id);
-                return new GetByIdResponseDto<Exam>
+                return new GetByIdResponseDto<ExamDto>
                 {
                     Success = false,
                     Message = $"حدث خطأ أثناء جلب الامتحان: {ex.Message}",
@@ -504,7 +532,9 @@ namespace EducationalSystem.Infrastructure.Repositories
                     };
                 }
 
-                return await DeleteAsync(examResponse.Data, cancellationToken);
+                var exam = await _context.TbExams.FirstOrDefaultAsync(e => e.Id == id);
+
+                return await DeleteAsync(exam, cancellationToken);
             }
             catch (Exception ex)
             {

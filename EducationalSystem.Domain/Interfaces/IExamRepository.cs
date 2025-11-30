@@ -6,7 +6,7 @@ namespace EducationalSystem.Domain.Interfaces
     public interface IExamRepository
     {
         // ===== READ OPERATIONS =====
-        Task<GetByIdResponseDto<Exam>> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
+        Task<GetByIdResponseDto<ExamDto>> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
         Task<GetByIdResponseDto<Exam>> GetByIdWithQuestionsAsync(Guid id, CancellationToken cancellationToken = default);
         Task<GetByIdResponseDto<Exam>> GetByIdWithQuestionsAndOptionsAsync(Guid id, CancellationToken cancellationToken = default);
         Task<GetByIdResponseDto<List<ExamDto>>> GetAllAsync(CancellationToken cancellationToken = default);
